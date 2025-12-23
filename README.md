@@ -31,7 +31,7 @@ All processing happens locally with persistent vector storage.
 
 1. **Clone the repository**
    ```bash
-   cd ai-tutor
+   cd agentic-rag-eln
    ```
 
 2. **Install dependencies**
