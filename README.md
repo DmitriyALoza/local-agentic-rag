@@ -23,7 +23,7 @@ All processing happens locally with persistent vector storage.
 
 ## Requirements
 
-- Python 3.14+
+- Python 3.13+
 - OpenAI API key
 - uv (Python package manager)
 

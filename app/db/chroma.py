@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 from typing import List, Dict, Optional
 import chromadb
-from chromadb.config import Settings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -36,11 +35,7 @@ class ChromaDBClient:
 
         # Create ChromaDB client with persistent storage
         self._client = chromadb.PersistentClient(
-            path=str(chroma_path),
-            settings=Settings(
-                anonymized_telemetry=False,
-                allow_reset=True
-            )
+            path=str(chroma_path)
         )
 
     def get_or_create_collection(self, collection_name: str = "eln_documents"):

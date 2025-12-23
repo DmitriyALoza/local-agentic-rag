@@ -4,8 +4,12 @@ AI-ELN (AI Electronic Lab Notebook) - Main Streamlit Application
 
 import streamlit as st
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
+
+# Add parent directory to path to enable imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.tools.ingest import ingestion_tool
 from app.agent import eln_agent

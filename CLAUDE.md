@@ -10,7 +10,7 @@ AI-ELN (ai-tutor) is a local-first, agent-native Electronic Lab Notebook that al
 
 ## Tech Stack
 
-- **Language:** Python 3.14+ (requires-python = ">=3.14")
+- **Language:** Python 3.13+ (requires-python = ">=3.13")
 - **Package Manager:** uv (NOT pip)
 - **UI Framework:** Streamlit
 - **Agent Framework:** OpenAI Agent SDK
