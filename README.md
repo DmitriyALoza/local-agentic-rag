@@ -1,13 +1,13 @@
-# AI-ELN: AI Electronic Lab Notebook
+# Local Agentic RAG
 
-A local-first, agent-native Electronic Lab Notebook that allows scientists to upload experimental artifacts and query them conversationally using AI.
+A local-first, agent-native document search and Q&A system that allows anyone to upload documents and query them conversationally using AI.
 
 ## Overview
 
-AI-ELN enables scientists to:
-- Upload lab documents (PowerPoint, Excel, Word, PDF)
-- Automatically index and embed experimental data
-- Ask natural language questions about experiments
+Local Agentic RAG enables you to:
+- Upload documents (PowerPoint, Excel, Word, PDF)
+- Automatically index and embed document content
+- Ask natural language questions about your documents
 - Receive answers with grounded citations from source documents
 
 All processing happens locally with persistent vector storage.
@@ -31,7 +31,7 @@ All processing happens locally with persistent vector storage.
 
 1. **Clone the repository**
    ```bash
-   cd agentic-rag-eln
+   cd local-agentic-rag
    ```
 
 2. **Install dependencies**
@@ -57,7 +57,7 @@ uv run streamlit run app/main.py
 
 The application will open in your browser at `http://localhost:8501`
 
-### Using the ELN
+### Using the Application
 
 1. **Upload Documents**
    - Click "Browse files" in the sidebar
@@ -71,10 +71,10 @@ The application will open in your browser at `http://localhost:8501`
    - Citations will appear in the "Sources" dropdown
 
 3. **Example Questions**
-   - "What was the cell viability in experiment X?"
-   - "List all documents that mention protein purification"
-   - "What temperature was used in the PCR protocol?"
-   - "Compare results from June and July experiments"
+   - "What are the key points from the Q1 report?"
+   - "List all documents that mention project deadlines"
+   - "What budget was allocated for marketing?"
+   - "Compare the sales figures from January and February"
 
 ## Project Structure
 
@@ -117,7 +117,7 @@ Streamlit UI
 OpenAI Agent (GPT-4)
     ↓
 Function Calling
-    ├── search_eln() → Retrieval Tool → ChromaDB
+    ├── search_documents() → Retrieval Tool → ChromaDB
     ├── list_documents() → Metadata Query Tool
     └── get_document_info() → Metadata Query Tool
     ↓
@@ -160,10 +160,10 @@ Edit `app/ingestion/chunker.py` and modify the `TextChunker` initialization para
 ### Agent Behavior
 
 The AI agent is instructed to:
-- Use ONLY retrieved information from the ELN
-- Never fabricate experimental data
+- Use ONLY retrieved information from the document database
+- Never fabricate data or information
 - Always cite sources (filename + section/page/slide)
-- Explicitly state "Not found in ELN" when information is unavailable
+- Explicitly state "Not found in the database" when information is unavailable
 - Preserve exact numerical values and units
 
 ### Vector Search
@@ -216,4 +216,3 @@ This project is for research and development purposes.
 
 For issues or questions, please check:
 - CLAUDE.md for development guidance
-- .llm/AI-ELN_v0_PRD.md for product requirements

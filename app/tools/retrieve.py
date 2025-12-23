@@ -1,6 +1,6 @@
 """
 Retrieval Tool for Vector Search
-Searches the ELN database for relevant document chunks
+Searches the document database for relevant document chunks
 """
 
 import os
@@ -15,7 +15,7 @@ load_dotenv()
 
 
 class RetrievalTool:
-    """Tool for retrieving relevant document chunks from the ELN"""
+    """Tool for retrieving relevant document chunks from the database"""
 
     def __init__(self):
         """Initialize the retrieval tool"""
@@ -112,16 +112,16 @@ class RetrievalTool:
             Formatted context string
         """
         if not retrieval_result.get("success"):
-            return "No relevant information found in the ELN database."
+            return "No relevant information found in the database."
 
         chunks = retrieval_result["chunks"]
         citations = retrieval_result["citations"]
 
         if not chunks:
-            return "No relevant information found in the ELN database."
+            return "No relevant information found in the database."
 
         # Build formatted context
-        context_parts = ["Retrieved information from ELN:\n"]
+        context_parts = ["Retrieved information from documents:\n"]
 
         for idx, (chunk, citation) in enumerate(zip(chunks, citations), 1):
             context_parts.append(f"\n[Source {idx}: {citation}]")

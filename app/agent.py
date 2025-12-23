@@ -1,5 +1,5 @@
 """
-OpenAI Agent for ELN Query Processing
+OpenAI Agent for RAG Query Processing
 Handles natural language queries using retrieval tools
 """
 
@@ -15,14 +15,14 @@ from app.tools.metadata import metadata_query_tool
 load_dotenv()
 
 
-class ELNAgent:
+class RAGAgent:
     """
-    AI Agent for querying the Electronic Lab Notebook
+    AI Agent for querying the document database
     Uses function calling to retrieve relevant information
     """
 
     def __init__(self):
-        """Initialize the ELN Agent"""
+        """Initialize the RAG Agent"""
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.model = "gpt-4o"  # or "gpt-4-turbo" depending on availability
 
@@ -32,15 +32,15 @@ class ELNAgent:
             with open(prompt_path, "r") as f:
                 self.system_prompt = f.read()
         else:
-            self.system_prompt = "You are an AI Electronic Lab Notebook assistant."
+            self.system_prompt = "You are an AI document assistant."
 
         # Define available functions
         self.tools = [
             {
                 "type": "function",
                 "function": {
-                    "name": "search_eln",
-                    "description": "Search the Electronic Lab Notebook for relevant information about experiments, procedures, or results. Use this to answer questions about lab data.",
+                    "name": "search_documents",
+                    "description": "Search the document database for relevant information. Use this to answer questions about the uploaded documents.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -62,7 +62,7 @@ class ELNAgent:
                 "type": "function",
                 "function": {
                     "name": "list_documents",
-                    "description": "List all documents that have been uploaded to the ELN. Use this to see what data is available.",
+                    "description": "List all documents that have been uploaded. Use this to see what data is available.",
                     "parameters": {
                         "type": "object",
                         "properties": {},
@@ -139,7 +139,7 @@ class ELNAgent:
                     function_args = eval(tool_call.function.arguments)
 
                     # Execute the appropriate function
-                    if function_name == "search_eln":
+                    if function_name == "search_documents":
                         result = retrieval_tool.retrieve(
                             query=function_args.get("query"),
                             n_results=function_args.get("n_results", 5)
@@ -199,4 +199,4 @@ class ELNAgent:
 
 
 # Global instance
-eln_agent = ELNAgent()
+rag_agent = RAGAgent()

@@ -40,9 +40,9 @@ class ChromaDBClient:
             settings=chromadb.Settings(anonymized_telemetry=False)
         )
 
-    def get_or_create_collection(self, collection_name: str = "eln_documents"):
+    def get_or_create_collection(self, collection_name: str = "rag_documents"):
         """
-        Get or create a ChromaDB collection for ELN documents
+        Get or create a ChromaDB collection for documents
 
         Args:
             collection_name: Name of the collection
@@ -53,7 +53,7 @@ class ChromaDBClient:
         if self._collection is None or self._collection.name != collection_name:
             self._collection = self._client.get_or_create_collection(
                 name=collection_name,
-                metadata={"description": "Electronic Lab Notebook documents and chunks"}
+                metadata={"description": "RAG system documents and chunks"}
             )
         return self._collection
 
@@ -149,7 +149,7 @@ class ChromaDBClient:
         collection = self.get_or_create_collection()
         return collection.count()
 
-    def delete_collection(self, collection_name: str = "eln_documents"):
+    def delete_collection(self, collection_name: str = "rag_documents"):
         """Delete a collection"""
         try:
             self._client.delete_collection(name=collection_name)

@@ -21,7 +21,7 @@ load_dotenv()
 
 
 class DocumentIngestionTool:
-    """Tool for ingesting documents into the ELN system"""
+    """Tool for ingesting documents into the RAG system"""
 
     def __init__(self):
         """Initialize the ingestion tool with parsers and chunker"""

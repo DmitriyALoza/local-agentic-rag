@@ -1,5 +1,5 @@
 """
-AI-ELN (AI Electronic Lab Notebook) - Main Streamlit Application
+Local Agentic RAG - Main Streamlit Application
 """
 
 import streamlit as st
@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.tools.ingest import ingestion_tool
-from app.agent import eln_agent
+from app.agent import rag_agent
 from app.tools.metadata import metadata_query_tool
 
 # Load environment variables
@@ -20,8 +20,8 @@ load_dotenv()
 
 # Configure page
 st.set_page_config(
-    page_title="AI-ELN",
-    page_icon="🔬",
+    page_title="Local Agentic RAG",
+    page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -39,7 +39,7 @@ if "uploaded_files_list" not in st.session_state:
         ]
 
 # Main title
-st.title("🔬 AI Electronic Lab Notebook")
+st.title("📚 Local Agentic RAG")
 
 # Show status of indexed documents
 if st.session_state.uploaded_files_list:
@@ -51,7 +51,7 @@ else:
 # Sidebar for file upload
 with st.sidebar:
     st.header("📁 Document Upload")
-    st.markdown("Upload your lab notebooks and experimental data")
+    st.markdown("Upload your documents for AI-powered search")
 
     # File uploader
     uploaded_files = st.file_uploader(
@@ -149,7 +149,7 @@ for message in st.session_state.messages:
                     st.markdown(f"- {source}")
 
 # Chat input
-if prompt := st.chat_input("Ask a question about your experiments..."):
+if prompt := st.chat_input("Ask a question about your documents..."):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -173,7 +173,7 @@ if prompt := st.chat_input("Ask a question about your experiments..."):
                 ]
 
                 # Get response from agent
-                result = eln_agent.query(prompt, conversation_history)
+                result = rag_agent.query(prompt, conversation_history)
 
                 if result.get("success"):
                     response = result["response"]
@@ -202,4 +202,4 @@ if prompt := st.chat_input("Ask a question about your experiments..."):
 
 # Footer
 st.markdown("---")
-st.caption("AI-ELN v0 - Local-first Electronic Lab Notebook")
+st.caption("Local Agentic RAG - AI-powered document search and Q&A")

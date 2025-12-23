@@ -1,6 +1,6 @@
 """
 Metadata Query Tool
-Provides information about indexed documents and ELN contents
+Provides information about indexed documents and database contents
 """
 
 from typing import List, Dict, Set
@@ -8,7 +8,7 @@ from app.db.chroma import chroma_client
 
 
 class MetadataQueryTool:
-    """Tool for querying ELN metadata and document information"""
+    """Tool for querying document metadata and database information"""
 
     def __init__(self):
         """Initialize the metadata query tool"""
@@ -16,7 +16,7 @@ class MetadataQueryTool:
 
     def list_indexed_files(self) -> Dict:
         """
-        List all files that have been indexed in the ELN
+        List all files that have been indexed
 
         Returns:
             Dictionary containing file information
@@ -89,7 +89,7 @@ class MetadataQueryTool:
             if not metadatas:
                 return {
                     "success": False,
-                    "error": f"File '{filename}' not found in ELN"
+                    "error": f"File '{filename}' not found in database"
                 }
 
             # Aggregate information
@@ -118,7 +118,7 @@ class MetadataQueryTool:
 
     def get_collection_stats(self) -> Dict:
         """
-        Get statistics about the ELN collection
+        Get statistics about the document collection
 
         Returns:
             Dictionary with collection statistics
@@ -169,7 +169,7 @@ class MetadataQueryTool:
         files = list_result.get("files", [])
 
         if not files:
-            return "No files have been indexed in the ELN yet."
+            return "No files have been indexed yet."
 
         lines = [f"Total files indexed: {len(files)}\n"]
 

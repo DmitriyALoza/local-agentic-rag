@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI-ELN (ai-tutor) is a local-first, agent-native Electronic Lab Notebook that allows scientists to upload experimental artifacts (PowerPoint, Excel, Word, PDF) and query them conversationally using an OpenAI Agent.
+Local Agentic RAG is a local-first, agent-native document search and Q&A system that allows users to upload documents (PowerPoint, Excel, Word, PDF) and query them conversationally using an OpenAI Agent.
 
-**Core Concept:** Scientists upload lab documents, the system indexes them in a local vector database, and an AI agent answers questions about experiments with grounded citations.
+**Core Concept:** Users upload documents, the system indexes them in a local vector database, and an AI agent answers questions about the documents with grounded citations.
 
 ## Tech Stack
 
@@ -56,7 +56,7 @@ Streamlit UI → OpenAI Agent → Tool Calls → ChromaDB (local)
 
 No separate backend server. Everything runs locally.
 
-### Directory Structure (Planned)
+### Directory Structure
 ```
 app/
 ├── main.py              # Streamlit entry point
@@ -67,9 +67,11 @@ app/
 │   └── metadata.py      # Metadata management tool
 ├── ingestion/           # Format-specific parsers
 │   ├── pptx.py          # PowerPoint parser
-│   ├── pdf.py           # PDF parser (with OCR fallback)
+│   ├── pdf.py           # PDF parser
 │   ├── docx.py          # Word parser
-│   └── xlsx.py          # Excel parser
+│   ├── xlsx.py          # Excel parser
+│   ├── chunker.py       # Text chunking logic
+│   └── metadata.py      # Metadata extraction
 └── db/
     └── chroma.py        # ChromaDB interface
 
@@ -95,30 +97,29 @@ The OpenAI Agent follows this flow:
 2. Retrieve relevant chunks via retrieval tool
 3. Synthesize answer from retrieved context only
 4. Provide citations (filename + section)
-5. If answer not found: explicitly state "Not found in ELN."
+5. If answer not found: explicitly state "Not found in the database."
 
-**Critical Rule:** Agent must NEVER fabricate experimental values or data.
+**Critical Rule:** Agent must NEVER fabricate data or information.
 
 ### Vector Store Configuration
 - **Database:** ChromaDB in local persistent mode
 - **Embeddings:** OpenAI text embeddings (default)
 - **Storage Location:** `data/chroma/`
 
-### System Prompt (v0)
+### System Prompt
 ```
-You are an AI lab notebook assistant.
-Use only retrieved ELN context.
+You are an AI document assistant.
+Use only retrieved database context.
 Always cite source filename and section.
-If the answer is not present, say: "Not found in ELN."
-Do not fabricate experimental values.
+If the answer is not present, say: "Not found in the database."
+Do not fabricate data or information.
 ```
 
-## Development Phases
+## Development Status
 
-- **Phase 0:** Repository + UI scaffold
-- **Phase 1:** Document ingestion + indexing
-- **Phase 2:** Agent query + retrieval
-- **Phase 3:** UX polish
+- **Phase 1:** Document ingestion + indexing ✓
+- **Phase 2:** Agent query + retrieval ✓
+- **Phase 3:** UX improvements (ongoing)
 
 ## Non-Functional Requirements
 
@@ -133,13 +134,12 @@ Do not fabricate experimental values.
 Required in `.env`:
 - `OPENAI_API_KEY` - OpenAI API key for embeddings and agent
 
-## Important Constraints (v0)
+## Current Scope
 
 **Out of Scope:**
 - Multi-user authentication
 - Cloud hosting (AWS/GCP)
-- 21 CFR Part 11 compliance
-- SOP enforcement
-- Experiment graph reasoning
+- Advanced compliance features
+- Complex document relationship mapping
 
-These are explicitly non-goals for v0 to maintain rapid iteration.
+These features are not currently prioritized to maintain simplicity and rapid iteration.
