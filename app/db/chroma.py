@@ -34,8 +34,10 @@ class ChromaDBClient:
         chroma_path.mkdir(parents=True, exist_ok=True)
 
         # Create ChromaDB client with persistent storage
+        # Disable telemetry to avoid harmless warning messages
         self._client = chromadb.PersistentClient(
-            path=str(chroma_path)
+            path=str(chroma_path),
+            settings=chromadb.Settings(anonymized_telemetry=False)
         )
 
     def get_or_create_collection(self, collection_name: str = "eln_documents"):

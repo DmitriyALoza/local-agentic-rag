@@ -8,10 +8,15 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Environment variables (contains API keys - DO NOT COMMIT)
 .env
 
-#Mac OS
+# Data directory (contains uploaded documents and ChromaDB)
+data/
+
+# Mac OS
 .DS_Store
 
-#LLM
+# LLM
 .llm/

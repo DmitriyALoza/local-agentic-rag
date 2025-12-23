@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.tools.ingest import ingestion_tool
 from app.agent import eln_agent
+from app.tools.metadata import metadata_query_tool
 
 # Load environment variables
 load_dotenv()
@@ -30,10 +31,22 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "uploaded_files_list" not in st.session_state:
     st.session_state.uploaded_files_list = []
+    # Load previously indexed files from ChromaDB
+    indexed_files_result = metadata_query_tool.list_indexed_files()
+    if indexed_files_result.get("success") and indexed_files_result.get("files"):
+        st.session_state.uploaded_files_list = [
+            f["filename"] for f in indexed_files_result["files"]
+        ]
 
 # Main title
 st.title("🔬 AI Electronic Lab Notebook")
-st.markdown("Upload your lab documents and ask questions about your experiments")
+
+# Show status of indexed documents
+if st.session_state.uploaded_files_list:
+    num_docs = len(st.session_state.uploaded_files_list)
+    st.success(f"✓ {num_docs} document{'s' if num_docs != 1 else ''} indexed and ready for querying")
+else:
+    st.info("👉 Upload documents in the sidebar to get started")
 
 # Sidebar for file upload
 with st.sidebar:
@@ -93,12 +106,35 @@ with st.sidebar:
                 else:
                     st.info("All selected files have already been processed.")
 
-    # Display uploaded files
+    # Display database statistics and indexed files
     if st.session_state.uploaded_files_list:
         st.markdown("---")
-        st.subheader("Indexed Documents")
+
+        # Get database stats
+        stats = metadata_query_tool.get_collection_stats()
+        if stats.get("success"):
+            st.subheader("📊 Database Statistics")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Documents", stats.get("total_documents", 0))
+            with col2:
+                st.metric("Chunks", stats.get("total_chunks", 0))
+
+        st.markdown("---")
+        st.subheader("📄 Indexed Documents")
+        st.caption("Documents available for querying")
+
         for filename in st.session_state.uploaded_files_list:
             st.text(f"✓ {filename}")
+
+        # Add refresh button to reload file list
+        if st.button("🔄 Refresh List", help="Reload indexed documents from database"):
+            indexed_files_result = metadata_query_tool.list_indexed_files()
+            if indexed_files_result.get("success") and indexed_files_result.get("files"):
+                st.session_state.uploaded_files_list = [
+                    f["filename"] for f in indexed_files_result["files"]
+                ]
+                st.rerun()
 
 # Main chat interface
 st.header("💬 Ask Questions")
