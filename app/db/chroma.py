@@ -7,7 +7,11 @@ import os
 from pathlib import Path
 from typing import List, Dict, Optional
 import chromadb
+from chromadb.utils import embedding_functions
 from dotenv import load_dotenv
+import ollama
+
+from app.config import config
 
 load_dotenv()
 
@@ -30,7 +34,7 @@ class ChromaDBClient:
 
     def _initialize_client(self):
         """Initialize ChromaDB client with persistent storage"""
-        chroma_path = Path(os.getenv("CHROMA_PATH", "./data/chroma"))
+        chroma_path = Path(config.CHROMA_PATH)
         chroma_path.mkdir(parents=True, exist_ok=True)
 
         # Create ChromaDB client with persistent storage
@@ -39,6 +43,45 @@ class ChromaDBClient:
             path=str(chroma_path),
             settings=chromadb.Settings(anonymized_telemetry=False)
         )
+
+    def _get_embedding_function(self):
+        """
+        Get the appropriate embedding function based on configuration
+
+        Returns:
+            Embedding function for OpenAI or Ollama
+        """
+        embedding_config = config.get_embedding_config()
+
+        if embedding_config["provider"] == "openai":
+            return embedding_functions.OpenAIEmbeddingFunction(
+                api_key=embedding_config["api_key"],
+                model_name=embedding_config["model"]
+            )
+        else:  # ollama
+            # Create custom Ollama embedding function
+            class OllamaEmbeddingFunction:
+                def __init__(self, model_name: str, base_url: str):
+                    self.model_name = model_name
+                    self.base_url = base_url
+                    # Initialize ollama client
+                    self.client = ollama.Client(host=base_url)
+
+                def __call__(self, input: List[str]) -> List[List[float]]:
+                    """Generate embeddings for a list of texts"""
+                    embeddings = []
+                    for text in input:
+                        response = self.client.embeddings(
+                            model=self.model_name,
+                            prompt=text
+                        )
+                        embeddings.append(response['embedding'])
+                    return embeddings
+
+            return OllamaEmbeddingFunction(
+                model_name=embedding_config["model"],
+                base_url=embedding_config["base_url"]
+            )
 
     def get_or_create_collection(self, collection_name: str = "rag_documents"):
         """
@@ -51,8 +94,10 @@ class ChromaDBClient:
             ChromaDB collection object
         """
         if self._collection is None or self._collection.name != collection_name:
+            embedding_function = self._get_embedding_function()
             self._collection = self._client.get_or_create_collection(
                 name=collection_name,
+                embedding_function=embedding_function,
                 metadata={"description": "RAG system documents and chunks"}
             )
         return self._collection

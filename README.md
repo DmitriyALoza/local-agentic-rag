@@ -1,16 +1,30 @@
-# Local Agentic RAG
+# Self-Hosted Agentic RAG
 
-A local-first, agent-native document search and Q&A system that allows anyone to upload documents and query them conversationally using AI.
+A self-hosted, agent-native document search and Q&A system that allows anyone to upload documents and query them conversationally using AI. **Your documents and vector database stay entirely on your machine**, with flexible options for cloud AI or fully local operation.
 
 ## Overview
 
-Local Agentic RAG enables you to:
-- Upload documents (PowerPoint, Excel, Word, PDF)
-- Automatically index and embed document content
+Self-Hosted Agentic RAG enables you to:
+- Upload documents (PowerPoint, Excel, Word, PDF) that stay on your machine
+- Automatically index and embed document content in a local vector database
 - Ask natural language questions about your documents
 - Receive answers with grounded citations from source documents
+- Choose between cloud AI (OpenAI) or fully local models (Ollama)
 
-All processing happens locally with persistent vector storage.
+### Privacy & Architecture
+
+Your documents and vector database are stored locally on your machine. You have two options for the AI processing:
+
+**Option 1: OpenAI (Default)** - Faster and more powerful
+- Document chunks are sent to OpenAI's API for embeddings and responses
+- Better quality answers with GPT-4
+- Requires internet connection and API key
+
+**Option 2: Ollama (Fully Local)** - Maximum privacy
+- Everything runs on your machine - zero data leaves your computer
+- Uses local models like Llama 3 or Mistral
+- Works offline and is completely free after setup
+- Performance depends on your hardware
 
 ## Features
 
@@ -24,8 +38,10 @@ All processing happens locally with persistent vector storage.
 ## Requirements
 
 - Python 3.13+
-- OpenAI API key
 - uv (Python package manager)
+- **Either**:
+  - OpenAI API key (for cloud-powered AI), **OR**
+  - Ollama installed (for fully local operation)
 
 ## Installation
 
@@ -41,10 +57,38 @@ All processing happens locally with persistent vector storage.
 
 3. **Configure environment variables**
 
-   Edit the `.env` file and add your OpenAI API key:
+   Create a `.env` file (copy from `.env.example`) and choose your setup:
+
+   **For OpenAI (Default):**
    ```bash
+   # OpenAI Configuration
+   LLM_PROVIDER=openai
    OPENAI_API_KEY=sk-your-api-key-here
    ```
+
+   **For Ollama (Fully Local):**
+   ```bash
+   # Ollama Configuration
+   LLM_PROVIDER=ollama
+   OLLAMA_MODEL=llama3
+   OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+   OLLAMA_BASE_URL=http://localhost:11434
+   ```
+
+4. **(Optional) Set up Ollama for fully local operation**
+
+   If you want to run completely locally without any cloud dependencies:
+
+   ```bash
+   # Install Ollama (macOS/Linux)
+   curl -fsSL https://ollama.ai/install.sh | sh
+
+   # Pull the models you want to use
+   ollama pull llama3              # For chat completions
+   ollama pull nomic-embed-text    # For embeddings
+   ```
+
+   Then set `LLM_PROVIDER=ollama` in your `.env` file.
 
 ## Usage
 

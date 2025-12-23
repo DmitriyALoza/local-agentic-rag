@@ -14,9 +14,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.tools.ingest import ingestion_tool
 from app.agent import rag_agent
 from app.tools.metadata import metadata_query_tool
+from app.config import config
 
 # Load environment variables
 load_dotenv()
+
+# Validate configuration
+is_valid, error_msg = config.validate()
+if not is_valid:
+    st.error(f"❌ Configuration Error: {error_msg}")
+    st.info("Please check your .env file and ensure it's properly configured.")
+    st.stop()
 
 # Configure page
 st.set_page_config(
@@ -52,6 +60,20 @@ else:
 with st.sidebar:
     st.header("📁 Document Upload")
     st.markdown("Upload your documents for AI-powered search")
+
+    # Display current provider configuration
+    st.markdown("---")
+    st.subheader("⚙️ AI Provider")
+    if config.LLM_PROVIDER == "openai":
+        st.success("🌐 **OpenAI** (Cloud)")
+        st.caption(f"Model: {config.OPENAI_MODEL}")
+        st.caption(f"Embeddings: {config.OPENAI_EMBEDDING_MODEL}")
+    else:
+        st.success("🏠 **Ollama** (Local)")
+        st.caption(f"Model: {config.OLLAMA_MODEL}")
+        st.caption(f"Embeddings: {config.OLLAMA_EMBEDDING_MODEL}")
+    st.caption("*Configure in .env file*")
+    st.markdown("---")
 
     # File uploader
     uploaded_files = st.file_uploader(

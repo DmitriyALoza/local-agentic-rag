@@ -1,14 +1,18 @@
 """
-OpenAI Agent for RAG Query Processing
+AI Agent for RAG Query Processing
 Handles natural language queries using retrieval tools
+Supports both OpenAI and Ollama providers
 """
 
 import os
+import json
 from pathlib import Path
 from typing import List, Dict
 from openai import OpenAI
 from dotenv import load_dotenv
+import ollama
 
+from app.config import config
 from app.tools.retrieve import retrieval_tool
 from app.tools.metadata import metadata_query_tool
 
@@ -19,12 +23,20 @@ class RAGAgent:
     """
     AI Agent for querying the document database
     Uses function calling to retrieve relevant information
+    Supports both OpenAI and Ollama providers
     """
 
     def __init__(self):
         """Initialize the RAG Agent"""
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.model = "gpt-4o"  # or "gpt-4-turbo" depending on availability
+        llm_config = config.get_llm_config()
+        self.provider = llm_config["provider"]
+
+        if self.provider == "openai":
+            self.client = OpenAI(api_key=llm_config["api_key"])
+            self.model = llm_config["model"]
+        else:  # ollama
+            self.ollama_client = ollama.Client(host=llm_config["base_url"])
+            self.model = llm_config["model"]
 
         # Load system prompt
         prompt_path = Path("prompts/system.txt")
@@ -102,6 +114,22 @@ class RAGAgent:
             - response: The agent's response text
             - sources: List of citations used
             - success: Boolean indicating if query was successful
+        """
+        if self.provider == "openai":
+            return self._query_openai(user_message, conversation_history)
+        else:
+            return self._query_ollama(user_message, conversation_history)
+
+    def _query_openai(self, user_message: str, conversation_history: List[Dict] = None) -> Dict:
+        """
+        Process a user query using OpenAI
+
+        Args:
+            user_message: The user's question
+            conversation_history: Optional list of previous messages
+
+        Returns:
+            Dictionary containing response, sources, and success status
         """
         try:
             # Build messages
@@ -194,6 +222,86 @@ class RAGAgent:
             return {
                 "success": False,
                 "response": f"Error processing query: {str(e)}",
+                "sources": []
+            }
+
+    def _query_ollama(self, user_message: str, conversation_history: List[Dict] = None) -> Dict:
+        """
+        Process a user query using Ollama
+        Uses a simpler manual retrieval approach since Ollama doesn't have native function calling
+
+        Args:
+            user_message: The user's question
+            conversation_history: Optional list of previous messages
+
+        Returns:
+            Dictionary containing response, sources, and success status
+        """
+        try:
+            # Step 1: Retrieve relevant documents
+            retrieval_result = retrieval_tool.retrieve(query=user_message, n_results=5)
+
+            if not retrieval_result.get("success"):
+                return {
+                    "success": False,
+                    "response": "Error retrieving documents from the database.",
+                    "sources": []
+                }
+
+            # Step 2: Format context for the LLM
+            context = retrieval_tool.format_context_for_agent(retrieval_result)
+            citations = retrieval_result.get("citations", [])
+
+            # Step 3: Build the prompt with context
+            messages = []
+
+            # Add system prompt
+            messages.append({
+                "role": "system",
+                "content": self.system_prompt
+            })
+
+            # Add conversation history if provided
+            if conversation_history:
+                messages.extend(conversation_history)
+
+            # Add the current query with context
+            user_prompt = f"""Based on the following context from the document database, please answer the question.
+
+Context:
+{context}
+
+Question: {user_message}
+
+Remember to:
+1. Only use information from the provided context
+2. Cite your sources by mentioning the filename and section
+3. If the answer is not in the context, say "Not found in the database"
+4. Do not fabricate information"""
+
+            messages.append({
+                "role": "user",
+                "content": user_prompt
+            })
+
+            # Step 4: Get response from Ollama
+            response = self.ollama_client.chat(
+                model=self.model,
+                messages=messages
+            )
+
+            final_response = response['message']['content']
+
+            return {
+                "success": True,
+                "response": final_response,
+                "sources": list(set(citations))  # Deduplicate citations
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "response": f"Error processing query with Ollama: {str(e)}",
                 "sources": []
             }
 
